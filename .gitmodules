@@ -4,3 +4,9 @@
 [submodule "Differential-Privacy-Based-Federated-Learning"]
 	path = Differential-Privacy-Based-Federated-Learning
 	url = https://github.com/wenzhu23333/Differential-Privacy-Based-Federated-Learning.git
+[submodule "idash-2020"]
+	path = idash-2020
+	url = https://github.com/owkin/idash-2020.git
+[submodule "data/Brain-Tumor-Classification-DataSet"]
+	path = data/Brain-Tumor-Classification-DataSet
+	url = https://github.com/SartajBhuvaji/Brain-Tumor-Classification-DataSet.git
