@@ -20,13 +20,13 @@ Michael add yours
 Michael fill this out w/ yours
 
 ### Defend Algorithms
-Currently, the algorithms for defense consist of Homomorphic Encryption (HE). The basic methodology used is from the Py-FHE Repository referenced above.
+Currently, the algorithms for defense consist of Homomorphic Encryption (HE). The basic methodology used is from the Py-FHE Repository referenced above. These algorithms currently only exist in the "defend" branch.
 
+The following file paths that have been changed from the Py-FHE implementation are as follows:
 
-### Contents
-- [`new-feature/`](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/BC-TCGA-Normal.txt)
-- [`models/`]([./models](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/test_bfv_encrypt_decrypt.py)): Contains machine learning models.
-- [`attacks/`]([./attacks](https://github.com/michael-xu-ecen/766-ppml/blob/defend/py-fhe/tests/bfv/test_he.py)): Contains code for implementing privacy attacks.
+py-fhe/tests/bfv/test_he.py -> New file with Microsoft SEAL attemps
+py-fhe/tests/bfv/BC-TCGA-Normal.txt -> New file with dataset example
+py-fhe/tests/bfv/test_bfv_encrypt_decrypt.py -> File present in Py-FHE with new parsing algorithms for the specific use case
 
 ### Installation
-1. Clone this repository to your local machine.
+1. Future instructions will be written for installation.
