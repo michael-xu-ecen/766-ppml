@@ -24,7 +24,7 @@ Currently, the algorithms for defense consist of Homomorphic Encryption (HE). Th
 
 
 ### Contents
-- [`py-fhe/`](./py-fhe): Contains datasets used for experimentation.
+- [`new-feature/`](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/BC-TCGA-Normal.txt)
 - [`models/`](./models): Contains machine learning models.
 - [`attacks/`](./attacks): Contains code for implementing privacy attacks.
 - [`defenses/`](./defenses): Contains code for implementing privacy defense mechanisms.
