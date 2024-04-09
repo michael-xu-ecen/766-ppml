@@ -1,2 +1,27 @@
 # 766-ppml
-Privacy Preservation Machine Learning with Attacks and Defenses
+
+## Privacy Preservation Machine Learning with Attacks and Defenses
+
+### Introduction
+This repository contains the code and resources for implementing Privacy Preservation Machine Learning (PPML) techniques along with various attacks and defense mechanisms. PPML aims to protect sensitive information in machine learning models and datasets from unauthorized access or inference attacks. In its current state, there are two branches off of main. The "attack" branch is authored by Michael Xu and showcases his progress thus far on the attacks.
+The "defend" branch is authored by Anna Theodore and showcases her progress thus far on the defenses.
+
+### Problem
+This research aims to tackle security concerns related to safeguarding the privacy of personal data. As the field of Bioinformatics continues to expand, it is vital to protect the personal health data of millions of individuals. A challenge arises when attempting to distribute sensitive data. There is a need to conceal enough information to protect the data owner’s privacy while also sharing enough information to optimize model performance. To protect this private data, this project will implement and test gradient inversion attacks and defenses against these attacks.
+
+### Data
+The Dataset used is the
+
+### Algorithms
+
+
+### Contents
+- `datasets/`: Contains datasets used for experimentation.
+- `models/`: Contains machine learning models.
+- `attacks/`: Contains code for implementing privacy attacks.
+- `defenses/`: Contains code for implementing privacy defense mechanisms.
+- `experiments/`: Contains scripts and notebooks for conducting experiments.
+- `utils/`: Contains utility functions used across the project.
+
+### Installation
+1. Clone this repository to your local machine.
