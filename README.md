@@ -10,14 +10,17 @@ The "defend" branch is authored by Anna Theodore and showcases her progress thus
 This research aims to tackle security concerns related to safeguarding the privacy of personal data. As the field of Bioinformatics continues to expand, it is vital to protect the personal health data of millions of individuals. A challenge arises when attempting to distribute sensitive data. There is a need to conceal enough information to protect the data owner’s privacy while also sharing enough information to optimize model performance. To protect this private data, this project will implement and test gradient inversion attacks and defenses against these attacks.
 
 ### Data
-Michael fill this out
+The dataset is breast cancer data compiled by The Cancer Genome Atlas. The dataset will be referred to as BC-TCGA. BC-TCGA consists of 17,814 genes and 590 samples, 61 normal tissue samples and 529 breast cancer
+tissue samples.
+Currently exploring 3-D Datasets.
 
 ## Related Repositories
 - [Py-FHE Repository](https://github.com/sarojaerabelli/py-fhe.git): Python Implementation of Fully Homomorphic Encryption.
-Michael add yours
+- [GradAttack](https://github.com/Princeton-SysML/GradAttack): Python Library for Gradient Attacks
 
 ### Attack Algorithms
-Michael fill this out w/ yours
+Currently, the algorithms for attack consists of the basic Gradient Inversion attack implemented by GradAttack. 
+More information on development in [Attack Branch](https://github.com/michael-xu-ecen/766-ppml/tree/attack)
 
 ### Defend Algorithms
 Currently, the algorithms for defense consist of Homomorphic Encryption (HE). The basic methodology used is from the Py-FHE Repository referenced above. These algorithms currently only exist in the "defend" branch.
