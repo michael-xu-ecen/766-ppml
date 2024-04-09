@@ -24,9 +24,9 @@ Currently, the algorithms for defense consist of Homomorphic Encryption (HE). Th
 
 The following file paths that have been changed from the Py-FHE implementation are as follows:
 
-py-fhe/tests/bfv/test_he.py -> New file with Microsoft SEAL attemps
-py-fhe/tests/bfv/BC-TCGA-Normal.txt -> New file with dataset example
-py-fhe/tests/bfv/test_bfv_encrypt_decrypt.py -> File present in Py-FHE with new parsing algorithms for the specific use case
+py-fhe/tests/bfv/test_he.py -> New file with Microsoft SEAL attempts/n
+py-fhe/tests/bfv/BC-TCGA-Normal.txt -> New file with dataset example/n
+py-fhe/tests/bfv/test_bfv_encrypt_decrypt.py -> File present in Py-FHE with new parsing algorithms for the specific use case/n
 
 ### Installation
 1. Future instructions will be written for installation.
