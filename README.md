@@ -26,7 +26,7 @@ Currently, the algorithms for defense consist of Homomorphic Encryption (HE). Th
 ### Contents
 - [`new-feature/`](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/BC-TCGA-Normal.txt)
 - [`models/`]([./models](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/test_bfv_encrypt_decrypt.py)): Contains machine learning models.
-- [`attacks/`]([./attacks](https://github.com/michael-xu-ecen/766-ppml/blob/87931d0e6377fda40828988b2cbc2e7c0abf7fb9/py-fhe/tests/bfv/test_he.py)): Contains code for implementing privacy attacks.
+- [`attacks/`]([./attacks](https://github.com/michael-xu-ecen/766-ppml/blob/defend/py-fhe/tests/bfv/test_he.py)): Contains code for implementing privacy attacks.
 
 ### Installation
 1. Clone this repository to your local machine.
