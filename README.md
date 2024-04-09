@@ -10,18 +10,26 @@ The "defend" branch is authored by Anna Theodore and showcases her progress thus
 This research aims to tackle security concerns related to safeguarding the privacy of personal data. As the field of Bioinformatics continues to expand, it is vital to protect the personal health data of millions of individuals. A challenge arises when attempting to distribute sensitive data. There is a need to conceal enough information to protect the data owner’s privacy while also sharing enough information to optimize model performance. To protect this private data, this project will implement and test gradient inversion attacks and defenses against these attacks.
 
 ### Data
-The Dataset used is the
+Michael fill this out
 
-### Algorithms
+## Related Repositories
+- [Py-FHE Repository](https://github.com/sarojaerabelli/py-fhe.git): Python Implementation of Fully Homomorphic Encryption.
+Michael add yours
+
+### Attack Algorithms
+Michael fill this out w/ yours
+
+### Defend Algorithms
+Currently, the algorithms for defense consist of Homomorphic Encryption (HE). The basic methodology used is from the Py-FHE Repository referenced above.
 
 
 ### Contents
-- `datasets/`: Contains datasets used for experimentation.
-- `models/`: Contains machine learning models.
-- `attacks/`: Contains code for implementing privacy attacks.
-- `defenses/`: Contains code for implementing privacy defense mechanisms.
-- `experiments/`: Contains scripts and notebooks for conducting experiments.
-- `utils/`: Contains utility functions used across the project.
+- [`datasets/`](./datasets): Contains datasets used for experimentation.
+- [`models/`](./models): Contains machine learning models.
+- [`attacks/`](./attacks): Contains code for implementing privacy attacks.
+- [`defenses/`](./defenses): Contains code for implementing privacy defense mechanisms.
+- [`experiments/`](./experiments): Contains scripts and notebooks for conducting experiments.
+- [`utils/`](./utils): Contains utility functions used across the project.
 
 ### Installation
 1. Clone this repository to your local machine.
