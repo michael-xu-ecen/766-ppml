@@ -1,11 +1,11 @@
 [submodule "GradAttack"]
-	path = src/GradAttack
+	path = repos/GradAttack
 	url = https://github.com/Princeton-SysML/GradAttack.git
 [submodule "Differential-Privacy-Based-Federated-Learning"]
-	path = src/Differential-Privacy-Based-Federated-Learning
+	path = repos/Differential-Privacy-Based-Federated-Learning
 	url = https://github.com/wenzhu23333/Differential-Privacy-Based-Federated-Learning.git
 [submodule "idash-2020"]
-	path = src/idash-2020
+	path = repos/idash-2020
 	url = https://github.com/owkin/idash-2020.git
 [submodule "data/Brain-Tumor-Classification-DataSet"]
 	path = data/Brain-Tumor-Classification-DataSet
