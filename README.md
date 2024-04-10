@@ -2,7 +2,7 @@
 
 
 ## repos
-Contains git submodules for each model implementation
+Contains git submodules for each model implementation.
 Visit each repositories README for installation and running instructions.
 iDash-2020, DPBFL, and GradAttack were all successfully setup and run.
 
@@ -18,8 +18,8 @@ Implementation of LightningDataModule for BC-TCGA. Will be _used regardless of m
 Implementation of a 3-D dataset DataModule ..._
 
 ### GradAttack.py
-Example Gradient Inversion attack on CIFAR10 dataset. Taken from GradAttack/examples. Trying to convert this
-to work with BCTCGADataModule.
+Example Gradient Inversion attack on CIFAR10 dataset. Taken from GradAttack/examples. 
+Trying to convert this to work with BCTCGADataModule.
 
 ### DPFLAttack.py
 Example running on MNIST dataset.Trying to integrate GradAttack into this pipeline. Need to wrap model in Lightning.
