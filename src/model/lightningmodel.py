@@ -9,6 +9,9 @@ class LightningModel(pl.LightningModule):
         self.criterion = criterion
         self.optimizer_class = optimizer_class
 
+    def forward(self, x):
+        return self.net(x)
+
     def configure_optimizers(self):
         optimizer = self.optimizer_class(self.parameters(), lr=self.lr)
         return optimizer
@@ -43,19 +46,19 @@ class LightningModel(pl.LightningModule):
         self.log('val_loss', loss)
         return loss
 
-    def get_batch_gradients(
-        self,
-        batch: torch.tensor,
-        batch_idx: int = 0,
-        *args,
-    ):
-        #self.train()
-        self.zero_grad()
-        training_step_results = self.compute_training_step(
-            batch, batch_idx)
-
-        batch_gradients = torch.autograd.grad(
-            training_step_results['loss'],
-            self.net.parameters(),
-        )
-        return batch_gradients, training_step_results
+    # def get_batch_gradients(
+    #     self,
+    #     batch: torch.tensor,
+    #     batch_idx: int = 0,
+    #     *args,
+    # ):
+    #     #self.train()
+    #     self.zero_grad()
+    #     training_step_results = self.compute_training_step(
+    #         batch, batch_idx)
+    #
+    #     batch_gradients = torch.autograd.grad(
+    #         training_step_results['loss'],
+    #         self.net.parameters(),
+    #     )
+    #     return batch_gradients, training_step_results

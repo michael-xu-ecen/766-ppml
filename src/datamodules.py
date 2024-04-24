@@ -7,7 +7,7 @@ import torchio as tio
 import pytorch_lightning as pl
 
 directory = os.environ.get("MONAI_DATA_DIRECTORY")
-root_dir = tempfile.mkdtemp() if directory is None else directohipry
+root_dir = tempfile.mkdtemp() if directory is None else directory
 print(root_dir)
 class MedicalDecathlonDataModule(pl.LightningDataModule):
     def __init__(self, task, batch_size, train_val_ratio):

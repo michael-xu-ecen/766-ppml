@@ -1,12 +1,10 @@
 from typing import Sequence, Union
 
-import torch
 import torch.nn as nn
 
 from monai.networks.blocks.convolutions import Convolution, ResidualUnit
 from monai.networks.layers.factories import Act, Norm
 from monai.networks.layers.simplelayers import SkipConnection
-import torchio as tio
 
 class UNet(nn.Module):
     def __init__(

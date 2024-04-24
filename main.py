@@ -1,21 +1,20 @@
 from datetime import datetime
-
-import monai
-import pytorch_lightning as pl
-import torch
 from matplotlib import pyplot as plt
+
+import torch
+import torchio as tio
+import pytorch_lightning as pl
+import pandas as pd
+import seaborn as sb
+import monai
+
+from model.unet import UNet
+from model.lightningmodel import LightningModel
+from utils import parse_args
 
 from TrainingPipeline import TrainingPipeline
 from attack.attack import GradientInversionAttack
 from datamodules import MedicalDecathlonDataModule
-from attack.gradientinversion import GradientReconstructor
-from model.unet import UNet
-from model.lightningmodel import LightningModel
-import pandas as pd
-import seaborn as sb
-
-from utils import parse_args
-
 sb.set()
 plt.rcParams["figure.figsize"] = 12, 8
 monai.utils.set_determinism()
@@ -67,42 +66,46 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         gpus=1,
         precision=16,
-        max_epochs = 5,
+        max_epochs = 1,
         callbacks=[early_stopping])
     trainer.logger._default_hp_metric = False
     start = datetime.now()
     pipeline = TrainingPipeline(model, data, trainer)
+    # Fit
     pipeline.run()
 
 
     ################        PLOT VALIDATION RESULTS             #################
-    all_dices = []
-    get_dice = monai.metrics.DiceMetric(include_background=False, reduction="none")
-    with torch.no_grad():
-        for batch in data.val_dataloader():
-            inputs, targets = model.prepare_batch(batch)
-            logits = model.net(inputs.to(device))
-            labels = logits.argmax(dim=1)
-            labels_one_hot = torch.nn.functional.one_hot(labels).permute(0, 4, 1, 2, 3)
-            get_dice(labels_one_hot.to(device), targets.to(device))
-        metric = get_dice.aggregate()
-        get_dice.reset()
-        all_dices.append(metric)
-    all_dices = torch.cat(all_dices)
-    records = []
-    for ant, post in all_dices:
-        records.append({"Dice": ant, "Label": "Anterior"})
-        records.append({"Dice": post, "Label": "Posterior"})
-    df = pd.DataFrame.from_records(records)
-    ax = sb.stripplot(x="Label", y="Dice", data=df, size=10, alpha=0.5)
+    # all_dices = []
+    # get_dice = monai.metrics.DiceMetric(include_background=False, reduction="none")
+    # with torch.no_grad():
+    #     for batch in data.val_dataloader():
+    #         inputs, targets = model.prepare_batch(batch)
+    #         logits = model.net(inputs.to(device))
+    #         labels = logits.argmax(dim=1)
+    #         labels_one_hot = torch.nn.functional.one_hot(labels).permute(0, 4, 1, 2, 3)
+    #         get_dice(labels_one_hot.to(device), targets.to(device))
+    #     metric = get_dice.aggregate()
+    #     get_dice.reset()
+    #     all_dices.append(metric)
+    # all_dices = torch.cat(all_dices)
+    # records = []
+    # for ant, post in all_dices:
+    #     records.append({"Dice": ant, "Label": "Anterior"})
+    #     records.append({"Dice": post, "Label": "Posterior"})
+    # df = pd.DataFrame.from_records(records)
+    # ax = sb.stripplot(x="Label", y="Dice", data=df, size=10, alpha=0.5)
 
 
     ###################                TEST                 #####################
     # with torch.no_grad():
+    #     print("TEST-------------------------")
     #     for batch in data.test_dataloader():
-    #         inputs = batch["image"][tio.DATA].to(device)
-    #         labels = model.net(inputs).argmax(dim=1, keepdim=True).cpu()
-    #         break
+    #          inputs = batch["image"][tio.DATA].to(device)
+    #          labels = model.net(inputs).argmax(dim=1, keepdim=True).cpu()
+    #          print(len(inputs))
+    #          print(len(labels))
+    #          break
     # batch_subjects = tio.utils.get_subjects_from_batch(batch)
     # tio.utils.add_images_from_batch(batch_subjects, labels, tio.LabelMap)
     # for subject in batch_subjects:
@@ -113,15 +116,36 @@ if __name__ == "__main__":
     trainloader = data.train_dataloader()
     for (idx, batch) in enumerate(trainloader):
         print("batch number" + str(idx))
-        batch_gradients, step_results = model.get_batch_gradients(batch, idx)
-        batch_inputs, batch_targets = step_results[
-            "transformed_batch"]
-        attack = GradientInversionAttack(pipeline=pipeline,
+        inputs = batch["image"][tio.DATA].to(device)
+        labels = batch["label"][tio.DATA].to(device)
+        #labels = model.net(inputs).argmax(dim=1, keepdim=True).cpu()
+        gradients = torch.autograd.grad(
+            model.compute_training_step(batch, idx)['loss'],
+            model.net.parameters(),
+        )
+
+        attack = GradientInversionAttack(model=model,
                                          dm=0, ds=1,
                                          device=device,
                                          loss_metric=monai.losses.DiceCELoss(softmax=True))
 
-        attack.run_attack_batch(batch_inputs=batch_inputs, batch_targets=batch_targets)
+        attack.run_attack_batch(batch_inputs=inputs, batch_targets=labels)
+
+
+        # Attack using reconstructio_algorithms.GradientReconstructor
+        # batch_gradients, step_results = model.get_batch_gradients(batch, idx)
+        # batch_inputs, batch_targets = step_results[
+        #     "transformed_batch"]
+        # attack = GradientInversionAttack(model=model,
+        #                                  dm=0, ds=1,
+        #                                  device=device,
+        #                                  loss_metric=monai.losses.DiceCELoss(softmax=True))
+        #
+        # attack.run_attack_batch(batch_inputs=batch_inputs, batch_targets=batch_targets)
+
+
+        # Attack using gradientinversion.py
+
         # print(batch_inputs_transform)
         # print(batch_gradients)
         # print(batch_targets_transform)
