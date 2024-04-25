@@ -1,14 +1,13 @@
-# plugs attack into existing gradient inversion attack framework
+# plugs attacks into existing gradient inversion attacks framework
 import copy
 from typing import Callable
-
 import torch
 import pytorch_lightning as pl
-from attack.invertinggradients.inversefed import GradientReconstructor
+from inversefed import GradientReconstructor
 
 
 class GradientInversionAttack:
-    """Wrapper around Gradient Inversion attack"""
+    """Wrapper around Gradient Inversion attacks"""
     def __init__(
         self,
         model: pl.LightningModule,
@@ -18,7 +17,7 @@ class GradientInversionAttack:
         loss_metric: Callable,
         reconstructor_args: dict = None,
     ):
-        self._model = copy.deepcopy(model)
+        self._model = model
         self.device = device
         self.loss_metric = loss_metric
         if reconstructor_args is None:
@@ -28,26 +27,16 @@ class GradientInversionAttack:
 
     def run_attack_batch(self, batch_inputs: torch.tensor,
                          batch_targets: torch.tensor):
-        """Runs an attack given a batch of inputs and targets. Both should be tensors of shape (N, ...), where N
+        """Runs an attacks given a batch of inputs and targets. Both should be tensors of shape (N, ...), where N
         is the number of inputs in the batch"""
         self._model.to(self.device)
         self._model.zero_grad()
-        #self._model.train()
-        output = self._model.net(batch_inputs)#.argmax(dim=1, keepdim=True)
-        print("Running attack batch......")
-        print(output.shape)
-        print(batch_targets.shape)
-        print(len(output))
-        print(len(batch_targets))
-        # print("output: " + str(output))
-        # print("target: " + str(batch_targets))
-
+        self._model.train()
+        output = self._model.net(batch_inputs.to(self._model.device))
         loss = self.loss_metric(output, batch_targets)
         batch_gradients = torch.autograd.grad(loss,
                                               self._model.parameters(),
                                               create_graph=False)
-
-        #TODO MULTILABEL
         return self.run_attack_gradient(batch_gradients,
                                         input_shape=batch_inputs[0].shape,
                                         labels=batch_targets)

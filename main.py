@@ -1,4 +1,3 @@
-from datetime import datetime
 from matplotlib import pyplot as plt
 
 import torch
@@ -7,50 +6,39 @@ import pytorch_lightning as pl
 import pandas as pd
 import seaborn as sb
 import monai
+from torchio import ScalarImage
 
 from model.unet import UNet
 from model.lightningmodel import LightningModel
-from utils import parse_args
 
 from TrainingPipeline import TrainingPipeline
-from attack.attack import GradientInversionAttack
+from attacks.attack import GradientInversionAttack
 from datamodules import MedicalDecathlonDataModule
+
+
 sb.set()
 plt.rcParams["figure.figsize"] = 12, 8
 monai.utils.set_determinism()
 
-
-# OUR TASK: segment the hippocampus on magnetic resonance images (MRI) of human brains.
-# Target: Target: Hippocampus head and body
-# Modality: Mono - modal MRI
-# Size: 394 3D volumes(263 Training + 131 Testing)
-# Source: Vanderbilt University Medical Center
-
-# Credit to GradAttack, Monai, and Medical Decathalon
-
-
 if __name__ == "__main__":
-    args, hparams, attack_hparams = parse_args()
-
-
     ################             Data               ###########################
-    data = MedicalDecathlonDataModule(
+    datamodule = MedicalDecathlonDataModule(
         task="Task04_Hippocampus",
-        batch_size=16,
+        batch_size=1,
         train_val_ratio=0.8)
-    data.prepare_data()
-    data.setup()
-    print("Training:  ", len(data.train_set))
-    print("Validation: ", len(data.val_set))
-    print("Test:      ", len(data.test_set))
+    datamodule.prepare_data()
+    datamodule.setup()
+    print("Training:  ", len(datamodule.train_set))
+    print("Validation: ", len(datamodule.val_set))
+    print("Test:      ", len(datamodule.test_set))
 
 
     #################           Model               ############################
     unet = UNet(
         dimensions=3,
         in_channels=1,
-        out_channels=3,
         channels=(8, 16, 32, 64),
+        out_channels=3,
         strides=(2, 2, 2))
     model = LightningModel(
         net=unet,
@@ -60,17 +48,18 @@ if __name__ == "__main__":
     device = model.device
 
 
-    #################           Pipeline            #############################
+    #################           Pipeline and Logs          #############################
     early_stopping = pl.callbacks.early_stopping.EarlyStopping(
         monitor="val_loss")
+
     trainer = pl.Trainer(
         gpus=1,
+        #max_epochs=1,
         precision=16,
-        max_epochs = 1,
-        callbacks=[early_stopping])
-    trainer.logger._default_hp_metric = False
-    start = datetime.now()
-    pipeline = TrainingPipeline(model, data, trainer)
+        callbacks=[early_stopping],)
+
+
+    pipeline = TrainingPipeline(model, datamodule, trainer)
     # Fit
     pipeline.run()
 
@@ -79,7 +68,7 @@ if __name__ == "__main__":
     # all_dices = []
     # get_dice = monai.metrics.DiceMetric(include_background=False, reduction="none")
     # with torch.no_grad():
-    #     for batch in data.val_dataloader():
+    #     for batch in datamodule.val_dataloader():
     #         inputs, targets = model.prepare_batch(batch)
     #         logits = model.net(inputs.to(device))
     #         labels = logits.argmax(dim=1)
@@ -100,11 +89,9 @@ if __name__ == "__main__":
     ###################                TEST                 #####################
     # with torch.no_grad():
     #     print("TEST-------------------------")
-    #     for batch in data.test_dataloader():
+    #     for batch in datamodule.test_dataloader():
     #          inputs = batch["image"][tio.DATA].to(device)
     #          labels = model.net(inputs).argmax(dim=1, keepdim=True).cpu()
-    #          print(len(inputs))
-    #          print(len(labels))
     #          break
     # batch_subjects = tio.utils.get_subjects_from_batch(batch)
     # tio.utils.add_images_from_batch(batch_subjects, labels, tio.LabelMap)
@@ -113,70 +100,34 @@ if __name__ == "__main__":
 
 
     ################            Gradient Inversion             ###################
-    trainloader = data.train_dataloader()
+    trainloader = datamodule.train_dataloader()
     for (idx, batch) in enumerate(trainloader):
-        print("batch number" + str(idx))
-        inputs = batch["image"][tio.DATA].to(device)
-        labels = batch["label"][tio.DATA].to(device)
-        #labels = model.net(inputs).argmax(dim=1, keepdim=True).cpu()
-        gradients = torch.autograd.grad(
-            model.compute_training_step(batch, idx)['loss'],
-            model.net.parameters(),
-        )
+        if(idx==1):
+            break
+        inputs, targets = model.prepare_batch(batch)
+        ground_truth = inputs
 
         attack = GradientInversionAttack(model=model,
                                          dm=0, ds=1,
                                          device=device,
-                                         loss_metric=monai.losses.DiceCELoss(softmax=True))
+                                         loss_metric=model.criterion)
 
-        attack.run_attack_batch(batch_inputs=inputs, batch_targets=labels)
+        opt, stats = attack.run_attack_batch(batch_inputs=inputs, batch_targets=targets)
+        print(stats)
 
+        rec_batch_subjects = tio.utils.get_subjects_from_batch(batch)
+        class_ = ScalarImage
+        for subject, data in zip(rec_batch_subjects, opt):
+            one_image = subject.get_first_image()
+            kwargs = {'tensor': data, 'affine': one_image.affine}
+            if 'filename' in one_image:
+                kwargs['filename'] = one_image['filename']
+            image = class_(**kwargs)
+            preprocess = datamodule.get_preprocessing_transform()
+            subject.add_image(preprocess(image), 'reconstruction')
 
-        # Attack using reconstructio_algorithms.GradientReconstructor
-        # batch_gradients, step_results = model.get_batch_gradients(batch, idx)
-        # batch_inputs, batch_targets = step_results[
-        #     "transformed_batch"]
-        # attack = GradientInversionAttack(model=model,
-        #                                  dm=0, ds=1,
-        #                                  device=device,
-        #                                  loss_metric=monai.losses.DiceCELoss(softmax=True))
-        #
-        # attack.run_attack_batch(batch_inputs=batch_inputs, batch_targets=batch_targets)
-
-
-        # Attack using gradientinversion.py
-
-        # print(batch_inputs_transform)
-        # print(batch_gradients)
-        # print(batch_targets_transform)
-
-        # attack = GradientReconstructor(
-        #     model,
-        #     ground_truth_inputs=batch_inputs_transform,
-        #     ground_truth_gradients=batch_gradients,
-        #     ground_truth_labels=batch_targets_transform,
-        #     # reconstruct_labels=attack_hparams["reconstruct_labels"],
-        #     # num_iterations=10000,
-        #     # signed_gradients=True,
-        #     # signed_image=attack_hparams["signed_image"],
-        #     # boxed=True,
-        #     # total_variation=attack_hparams["total_variation"],
-        #     # bn_reg=attack_hparams["bn_reg"],
-        #     # lr_scheduler=True,
-        #     # lr=attack_hparams["attack_lr"],
-        #     # attacker_eval_mode=attack_hparams["attacker_eval_mode"],
-        #     # BN_exact=attack_hparams["BN_exact"],
-        # )
-        # attack_trainer = pl.Trainer(
-        #     gpus=1,
-        #     max_epochs=1)
-        # attack_trainer.fit(attack)
-        # result = attack.best_guess.detach().to("cpu")
-
-
-
-
-
+        for subject in rec_batch_subjects:
+            subject.plot()
 
 
 

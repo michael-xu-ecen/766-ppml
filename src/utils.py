@@ -32,7 +32,7 @@ def parse_args():
         "--results_dir",
         default="./results",
         type=str,
-        help="directory to save attack results",
+        help="directory to save attacks results",
     )
     parser.add_argument("--n_epoch",
                         default=200,
@@ -194,27 +194,27 @@ def parse_args():
         "Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
     )
 
-    # For attack
+    # For attacks
     parser.add_argument("--reconstruct_labels", action="store_true")
     parser.add_argument("--attack_lr",
                         default=0.1,
                         type=float,
-                        help="learning rate for attack")
+                        help="learning rate for attacks")
     parser.add_argument("--tv", default=0.1, type=float, help="coef. for tv")
     parser.add_argument("--mini",
                         action="store_true",
-                        help="use the mini set for attack")
+                        help="use the mini set for attacks")
     parser.add_argument("--large",
                         action="store_true",
-                        help="use the large set for attack")
+                        help="use the large set for attacks")
     parser.add_argument("--data_seed",
                         default=None,
                         type=int,
-                        help="seed to select attack subset")
+                        help="seed to select attacks subset")
     parser.add_argument("--attack_epoch",
                         default=0,
                         type=int,
-                        help="iterations for the attack")
+                        help="iterations for the attacks")
     parser.add_argument(
         "--bn_reg",
         default=0,
@@ -224,7 +224,7 @@ def parse_args():
     parser.add_argument(
         "--attacker_eval_mode",
         action="store_true",
-        help="use eval model for gradients calculation for attack",
+        help="use eval model for gradients calculation for attacks",
     )
     parser.add_argument(
         "--defender_eval_mode",
