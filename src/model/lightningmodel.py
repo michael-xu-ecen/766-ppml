@@ -8,12 +8,14 @@ class LightningModel(pl.LightningModule):
         self.net = net
         self.criterion = criterion
         self.optimizer_class = optimizer_class
+        #self.grad_prune = False
+        #self.prune_ratio = 0.9
 
     def forward(self, x):
         return self.net(x)
 
     def configure_optimizers(self):
-        optimizer = self.optimizer_class(self.parameters(), lr=self.lr)
+        optimizer = self.optimizer_class(self.net.parameters(), lr=self.lr)
         return optimizer
 
     def prepare_batch(self, batch):
@@ -28,6 +30,17 @@ class LightningModel(pl.LightningModule):
         x, y_hat, y = self.infer_batch(batch)
         loss = self.criterion(y_hat, y)
         self.log('train_loss', loss, prog_bar=True)
+        # loss.backward(retain_graph=True)
+        # if self.grad_prune:
+        #     print("hello")
+        #     input_grads = [p.grad for p in self.net.parameters()]
+        #     threshold = [
+        #         torch.quantile(torch.abs(input_grads[i]), self.prune_ratio)
+        #         for i in range(len(input_grads))
+        #     ]
+        #     for i, p in enumerate(self.net.parameters()):
+        #         idx = torch.abs(p.grad) < threshold[i]
+        #         p.grad[idx] = 0
         return loss
 
 

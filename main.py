@@ -8,6 +8,7 @@ import seaborn as sb
 import monai
 from torchio import ScalarImage
 
+from attacks.metrics import psnr, ncc, ssim  # , ssim
 from model.unet import UNet
 from model.lightningmodel import LightningModel
 
@@ -19,6 +20,29 @@ from datamodules import MedicalDecathlonDataModule
 sb.set()
 plt.rcParams["figure.figsize"] = 12, 8
 monai.utils.set_determinism()
+
+plots = []
+def plotImage(rec_batch_subjects, opt):
+    ground_truth = None
+    for subject, data in zip(rec_batch_subjects, opt):
+        one_image = subject.get_first_image()
+        kwargs = {'tensor': data, 'affine': one_image.affine}
+        if 'filename' in one_image:
+            kwargs['filename'] = one_image['filename']
+        image = ScalarImage(**kwargs)
+        transform = tio.Compose([datamodule.get_preprocessing_transform(), datamodule.get_augmentation_transform()])
+        subject.add_image(transform(image), 'reconstruction')
+
+    for subject in rec_batch_subjects:
+        ground_truth = subject.get_images()[0].data
+        plots.append(subject)
+    return ground_truth
+
+def logMetrics(ground_truth, opt):
+    print("PSNR: " + str(psnr(opt, ground_truth)))
+    print("NCC: " + str(ncc(opt, ground_truth)))
+    print("SSIM: " + str(ssim(opt, ground_truth)))
+
 
 if __name__ == "__main__":
     ################             Data               ###########################
@@ -54,7 +78,7 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(
         gpus=1,
-        #max_epochs=1,
+        max_epochs=1,
         precision=16,
         callbacks=[early_stopping],)
 
@@ -100,34 +124,47 @@ if __name__ == "__main__":
 
 
     ################            Gradient Inversion             ###################
+    mean = 0
+    std = 1
+
     trainloader = datamodule.train_dataloader()
     for (idx, batch) in enumerate(trainloader):
-        if(idx==1):
+        if(idx<2):
+            continue
+        if(idx==3):
             break
-        inputs, targets = model.prepare_batch(batch)
-        ground_truth = inputs
-
-        attack = GradientInversionAttack(model=model,
-                                         dm=0, ds=1,
+        attack = GradientInversionAttack(pipeline,
+                                         dm=mean, ds=std,
                                          device=device,
                                          loss_metric=model.criterion)
+        print("-------- Running vanilla attack")
+        opt, stats = attack.run_attack_batch(batch, vanilla = True)
+        logMetrics(plotImage(tio.utils.get_subjects_from_batch(batch), opt), opt)
 
-        opt, stats = attack.run_attack_batch(batch_inputs=inputs, batch_targets=targets)
-        print(stats)
+        print("-------- Running attack with DP")
+        opt, stats = attack.run_attack_batch(batch, grad_clip=True, grad_prune=False, grad_noise=True, keep_pruned=False)
+        logMetrics(plotImage(tio.utils.get_subjects_from_batch(batch), opt), opt)
 
-        rec_batch_subjects = tio.utils.get_subjects_from_batch(batch)
-        class_ = ScalarImage
-        for subject, data in zip(rec_batch_subjects, opt):
-            one_image = subject.get_first_image()
-            kwargs = {'tensor': data, 'affine': one_image.affine}
-            if 'filename' in one_image:
-                kwargs['filename'] = one_image['filename']
-            image = class_(**kwargs)
-            preprocess = datamodule.get_preprocessing_transform()
-            subject.add_image(preprocess(image), 'reconstruction')
+        print("-------- Running attack with gradient pruning")
+        opt, stats = attack.run_attack_batch(batch, grad_clip=False, grad_prune=True, grad_noise=False, keep_pruned=False)
+        logMetrics(plotImage(tio.utils.get_subjects_from_batch(batch), opt), opt)
 
-        for subject in rec_batch_subjects:
+        print("-------- Running attack with pruning and DP")
+        opt, stats = attack.run_attack_batch(batch, grad_clip=True, grad_prune=True, grad_noise=True, keep_pruned=False)
+        logMetrics(plotImage(tio.utils.get_subjects_from_batch(batch), opt), opt)
+
+        print("-------- Running attack with pruning and DP")
+        opt, stats = attack.run_attack_batch(batch, grad_clip=True, grad_prune=True, grad_noise=True, keep_pruned=True)
+        logMetrics(plotImage(tio.utils.get_subjects_from_batch(batch), opt), opt)
+
+        for subject in plots:
             subject.plot()
+
+
+
+
+
+
 
 
 
